@@ -59,7 +59,7 @@ Row {data-height=100}
 ### KPI
 
 ```{r}
-valueBox(scales::number(round(sum(summarised_dist_time$total_distance)),suffix =  "Km"), caption = "Total Distance Cycled", color = "success", icon = "glyphicon glyphicon-circle-arrow-up")
+valueBox(scales::number(round(sum(summarised_dist_time$total_distance)),suffix =  " Km"), caption = "Total Distance Cycled", color = "success", icon = "glyphicon glyphicon-circle-arrow-up")
 
 ```
 
@@ -452,8 +452,8 @@ hchart(
     color = hex_to_rgba("indianred", 0.2),  # Semi-transparent color matching the line
     zIndex = -1
   ) |>
-  hc_xAxis(title = list(text = "Speed")) |>
-  hc_yAxis(title = list(text = "Cost")) |>
+  hc_xAxis(title = list(text = "Speed (Km/h)")) |>
+  hc_yAxis(title = list(text = "Cost (£)")) |>
   hc_title(text = "Estimated Cost by Speed")%>% 
   hc_tooltip(
     crosshairs = TRUE,

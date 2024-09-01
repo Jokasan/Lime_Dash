@@ -1,9 +1,9 @@
 {
     "id": "C4966D70",
-    "path": "~/Documents/R/lime_bike/lime_dash.Rmd",
-    "project_path": "lime_dash.Rmd",
+    "path": "~/Documents/R/lime_bike/index.Rmd",
+    "project_path": "index.Rmd",
     "type": "r_markdown",
-    "hash": "632442243",
+    "hash": "3921102164",
     "contents": "",
     "dirty": false,
     "created": 1725207943087.0,
@@ -13,15 +13,15 @@
         "tempName": "Untitled2",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "468,31",
-        "scrollLine": "442"
+        "cursorPosition": "454,43",
+        "scrollLine": "417"
     },
     "folds": "",
-    "lastKnownWriteTime": 1725211945,
+    "lastKnownWriteTime": 1725212234,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1725211945397,
+    "last_content_update": 1725212234672,
     "read_only": false,
     "read_only_alternatives": []
 }
