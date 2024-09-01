@@ -5,7 +5,7 @@ output:
   flexdashboard::flex_dashboard:
     theme: 
       version: 4
-      bootswatch: flatly
+      bootswatch: lux
     orientation: rows
 ---
     
@@ -67,7 +67,7 @@ valueBox(scales::number(round(sum(summarised_dist_time$total_distance)),suffix =
 ### KPI
 
 ```{r}
-valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£ "), caption = "Total Cost", color = "orange", icon = "glyphicon glyphicon-credit-card")
+valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£ "), caption = "Total Rides Cost", color = "orange", icon = "glyphicon glyphicon-credit-card")
 
 ```
 
@@ -75,7 +75,7 @@ valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£
 ### KPI
 
 ```{r}
-valueBox(scales::number(round(sum(summarised_dist_time$total_time)),suffix = " hrs "), caption = "Total Time", color = "steelblue", icon = "glyphicon glyphicon-time")
+valueBox(scales::number(round(sum(summarised_dist_time$total_time)),suffix = " hrs "), caption = "Total Rides Time", color = "steelblue", icon = "glyphicon glyphicon-time")
 
 ```
 
@@ -83,7 +83,7 @@ valueBox(scales::number(round(sum(summarised_dist_time$total_time)),suffix = " h
 ### KPI
 
 ```{r}
-valueBox(scales::number(round(mean(to_model$speed)),suffix = " Km/hr"), caption = "Average Speed", color = "purple", icon = "glyphicon glyphicon-flash")
+valueBox(scales::number(round(mean(to_model$speed)),suffix = " Km/h"), caption = "Average Cycle Speed", color = "purple", icon = "glyphicon glyphicon-flash")
 
 ```
 
@@ -352,11 +352,11 @@ geo_coded_end %>%
              group = "Heatmap") %>% 
   addMarkers(~END_LONGITUDE,~END_LATITUDE,label=~htmlEscape(postcode),
              clusterOptions = markerClusterOptions(),
-             group = "Point")
-  # addLayersControl(
-  #   overlayGroups = c("Heatmap","Point"),
-  #   options = layersControlOptions(collapsed = FALSE)
-  # )
+             group = "Point") %>% 
+  addLayersControl(
+    overlayGroups = c("Heatmap","Point"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
 ``` 
 
 Row {.tabset}
@@ -365,6 +365,7 @@ Row {.tabset}
 ### Total Cost Over Time
     
 ```{r}
+
 fawaz_lime %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
