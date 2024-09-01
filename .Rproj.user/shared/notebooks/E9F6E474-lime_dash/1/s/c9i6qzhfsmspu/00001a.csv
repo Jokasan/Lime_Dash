@@ -1,0 +1,17 @@
+"0","fawaz_lime %>% 
+  # select(STARTED_AT,COMPLETED_AT) %>% 
+  filter(STATUS == ""completed"" & !is.na(STARTED_AT)) %>% 
+  mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
+         COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=10)) %>%
+  mutate(start_date = lubridate::as_datetime(STARTED_AT),
+         end_date = lubridate::as_datetime(COMPLETED_AT),
+         day_of_week = wday(start_date, label = TRUE),
+         month = month(start_date, label = TRUE)) %>% 
+  select(day_of_week, month, DISTANCE_METERS) %>% 
+  group_by(month,day_of_week) %>% 
+  summarise(total_distance = sum(DISTANCE_METERS)/1000) %>% 
+  ungroup()-> summarised_dist_time
+"
+"1","[38;5;251m`summarise()` has grouped output by 'month'. You can
+override using the `.groups` argument.[39m
+"

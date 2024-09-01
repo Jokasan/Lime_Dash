@@ -1,0 +1,43 @@
+---
+title: "Sales Report with Highcharter"
+author: "Joshua Kunst"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+
+
+```
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+
+### Sales Forecast
+
+```{r}
+
+```
+
+### Sales by State
+
+```{r}
+
+```
+
+Column {.tabset data-width=400}
+-----------------------------------------------------------------------
+
+### Sales by Category
+
+```{r, fig.keep='none'}
+
+```
+
+### Best Sellers
+
+```{r}
+
+  
+```
