@@ -1,5 +1,6 @@
 ---
 title: "FoothiXLime 🍋"
+author: "Nils Indreiten"
 output: 
   flexdashboard::flex_dashboard:
     theme: 
@@ -393,8 +394,8 @@ for_time_series %>%
   e_area(Cost, smooth = TRUE) %>% 
   e_theme("westeros") %>% 
   e_axis_labels(y = "Cost in GBP") %>%
-  e_title("Total Cost by Date") %>% 
-  e_legend(right = 0) %>% 
+  # e_title("Total Cost by Date") %>% 
+  e_legend(show = FALSE) %>% 
   e_mark_line(
     data = list(type = "average"),
     label = list(
@@ -465,116 +466,3 @@ hchart(
     )
     ) 
 ```
-
-### Total Distance MonthxDayofWeek Drilldown
-
-```{r}
-
-fawaz_lime %>%
-  filter(STATUS == "completed" & !is.na(STARTED_AT)) %>%
-  mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
-         COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=19)) %>%
-  mutate(start_date = lubridate::as_datetime(STARTED_AT),
-         end_date = lubridate::as_datetime(COMPLETED_AT),
-         day_of_week = wday(start_date, label = TRUE),
-         month = month(start_date, label = TRUE)) %>%
-  mutate(time = as.integer(difftime(end_date,start_date,units = "mins"))) %>%
-  select(month, day_of_week, DISTANCE_METERS,COST_AMOUNT_CENTS,time) %>%
-  mutate(total_distance = DISTANCE_METERS/1000,
-         total_cost = COST_AMOUNT_CENTS/100,
-         total_time = time/60,
-         speed = ((DISTANCE_METERS/1000)/time)*60) %>%
-  group_by(month,day_of_week) %>%
-  summarise(total_distance = sum(total_distance)) %>%
-  ungroup()-> summarised_dist_time
-
-fntltp <- JS("function(){
-  return this.series.yAxis.categories[this.point.y] + ': ' +
-  Highcharts.numberFormat(this.point.value, 0);
-}")
-
-plotline <- list(
-  color = "#fde725", value = 8.5, width = 2, zIndex = 5,
-  label = list(
-    text = "Summer Ends", verticalAlign = "top",
-    style = list(color = "#606060"), textAlign = "left",
-    rotation = 0, x =-10
-  )
-)
-plotline <- list(
-  color = "#fde725",
-  value = 8.5,  # September is the 9th month, but arrays are 0-indexed
-  width = 2,
-  zIndex = 5,
-  label = list(
-    text = "Summer Ends",
-    align = "right",
-    style = list(color = "white",
-                 fontWeight = "bold"),
-    x = -6,  # Adjust this value to move the label horizontally
-    y = 12,   # Adjust this value to move the label vertically
-    useHTML = TRUE,
-    verticalAlign = "middle"
-  )
-)
-
-hchart(
-  summarised_dist_time %>%
-    rename("Day of Week" = day_of_week, "Month" = month),
-  "heatmap",
-  hcaes(
-    x = `Day of Week`,
-    y = Month,
-    value = total_distance)) %>%
-  hc_colorAxis(
-    stops = color_stops(10, viridisLite::inferno(10, direction = -1))) %>%
-  hc_yAxis(
-    title = list(text = ""),
-    reversed = TRUE,
-    offset = -10,
-    tickLength = 0,
-    gridLineWidth = 0,
-    minorGridLineWidth = 0,
-    labels = list(style = list(fontSize = "9px"))
-  ) %>%
-  hc_tooltip(
-    formatter = fntltp
-  ) %>%
-  hc_yAxis(
-    plotLines = list(plotline),
-    labels = list(
-      style = list(fontSize = "14px")  # Adjust this value for x-axis label size
-    )
-  ) %>%
-  hc_xAxis(
-    labels = list(
-      style = list(fontSize = "14px")  # Adjust this value for x-axis label size
-    )
-  ) %>%
-  hc_title(
-    text = "What time of the year does Fawaz cycle the most?",
-    align = "left",
-    x=12) %>%
-  hc_subtitle(
-    text = "Fawaz cycled the most on Sundays in October\n
-      and on Tuesdays in August",
-    align = "left",
-    x=12
-  ) %>%
-hc_legend(
-    align = "right",
-    verticalAlign = "top",
-    layout = "vertical",
-    symbolWidth = 10,
-    symbolHeight = 200,
-    symbolPadding = 0,
-    padding = 20,
-    itemStyle = list(fontSize = "12px"),
-    title = list(text = "Distance (Km)"),
-    y=20
-  ) %>%
-# hc_size(height = 700) %>%
-  hc_credits(enabled = FALSE) %>%
-  hc_chart(style = list(fontFamily = "Arial, Helvetica, sans-serif"))
-```
-
