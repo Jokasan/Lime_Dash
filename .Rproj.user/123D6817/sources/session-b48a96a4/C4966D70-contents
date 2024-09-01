@@ -67,7 +67,7 @@ valueBox(scales::number(round(sum(summarised_dist_time$total_distance)),suffix =
 ### KPI
 
 ```{r}
-valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£ "), caption = "Total Rides Cost", color = "orange", icon = "glyphicon glyphicon-credit-card")
+valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£"), caption = "Total Rides Cost", color = "orange", icon = "glyphicon glyphicon-credit-card")
 
 ```
 
@@ -415,7 +415,7 @@ for_time_series %>%
       color = "orange"  # Set the color of the average line to red
     )
   ) %>% 
-  e_format_y_axis(suffix = "£") %>% 
+  e_format_y_axis(prefix = "£") %>% 
   e_timeline_opts(
     autoPlay = TRUE,
     playInterval = 2000)
