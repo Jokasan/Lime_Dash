@@ -67,7 +67,7 @@ valueBox(scales::number(round(sum(summarised_dist_time$total_distance)),suffix =
 ### KPI
 
 ```{r}
-valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£"), caption = "Total Rides Cost", color = "orange", icon = "glyphicon glyphicon-credit-card")
+valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£"), caption = "Total Cycling Cost", color = "orange", icon = "glyphicon glyphicon-credit-card")
 
 ```
 
@@ -75,7 +75,7 @@ valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£
 ### KPI
 
 ```{r}
-valueBox(scales::number(round(sum(summarised_dist_time$total_time)),suffix = " hrs "), caption = "Total Rides Time", color = "steelblue", icon = "glyphicon glyphicon-time")
+valueBox(scales::number(round(sum(summarised_dist_time$total_time)),suffix = " hrs "), caption = "Total Cycling Time", color = "steelblue", icon = "glyphicon glyphicon-time")
 
 ```
 
@@ -467,7 +467,7 @@ hchart(
     sort = TRUE,
     table = TRUE,
     style = list(
-      fontSize = "10px"
+      fontSize = "12px"
     )
     ) 
 ```
