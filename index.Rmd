@@ -320,7 +320,7 @@ hchart(
     style = list(fontSize = '12px')
   ) |>
   hc_yAxis(
-    title = list(text = "Total Distance")
+    title = list(text = "Total Distance (Km)")
   ) |>
   hc_xAxis(
     title = "Total Distance by Month & Day of Week",
