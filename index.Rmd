@@ -11,7 +11,7 @@ output:
     
 
 ```{r global, include=FALSE}
-pacman::p_load(tidyverse, lubridate, readr,highcharter,echarts4r,echarts4r.maps,leaflet,ggmap,leaflet.extras,htmltools,broom,flexdashboard,readr)
+pacman::p_load(tidyverse, lubridate, readr,highcharter,echarts4r,echarts4r.maps,leaflet,ggmap,leaflet.extras,htmltools,broom,flexdashboard,readr,viridisLite)
 
 geo_coded_start <- read_csv("geo_coded_start.csv")
 
@@ -295,6 +295,7 @@ day_drill_down <-summarised_dist_time %>%
     data = map(data, mutate, name = day_of_week, y  = total_distance),
     data = map(data, list_parse)
   )
+cols <- viridis(12,option = "rocket")
 
 x <- c("Total Distance: ")
 y <- c("{point.label}")
@@ -326,10 +327,11 @@ hchart(
     labels = list(style = list(fontSize = '14px'))
   ) %>% 
   hc_chart(
-    style = list(fontFamily = "Verdana"))
+    style = list(fontFamily = "Verdana")) %>% 
+  hc_colors(cols)
 ```
  
-### Trip Destinations
+### Total Cost over time
 
 ```{r}
 # geo_coded_start %>% 
@@ -344,27 +346,6 @@ hchart(
 #     overlayGroups = c("Heatmap","Point"),
 #     options = layersControlOptions(collapsed = FALSE)
 #   )
-
-geo_coded_end %>% 
-  leaflet() %>% 
-  addTiles() %>% 
-  addHeatmap(~END_LONGITUDE,~END_LATITUDE,blur = 20,
-             group = "Heatmap") %>% 
-  addMarkers(~END_LONGITUDE,~END_LATITUDE,label=~htmlEscape(postcode),
-             clusterOptions = markerClusterOptions(),
-             group = "Point") %>% 
-  addLayersControl(
-    overlayGroups = c("Heatmap","Point"),
-    options = layersControlOptions(collapsed = FALSE)
-  )
-``` 
-
-Row {.tabset}
--------------------------------------
-    
-### Total Cost Over Time
-    
-```{r}
 
 fawaz_lime %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
@@ -393,8 +374,8 @@ for_time_series %>%
   group_by(year) %>% 
   e_charts(date,timeline = TRUE) %>% 
   e_area(Cost, smooth = TRUE) %>% 
-  e_theme("westeros") %>% 
-  e_axis_labels(y = "Cost in GBP") %>%
+  e_theme("infographic") %>% 
+  e_axis_labels(y = "Cost") %>%
   # e_title("Total Cost by Date") %>% 
   e_legend(show = FALSE) %>% 
   e_mark_line(
@@ -405,7 +386,7 @@ for_time_series %>%
         formatter = htmlwidgets::JS(
           "function(params) {
                 var Cost = (params.value).toFixed(1);
-                return params.name + '£ ' + Cost;
+                return params.name +'Average cost:' +'£ ' + Cost;
               }"
         ),
         color = "orange"  # Set the color of the line and text to red
@@ -419,6 +400,29 @@ for_time_series %>%
   e_timeline_opts(
     autoPlay = TRUE,
     playInterval = 2000)
+
+``` 
+
+Row {.tabset}
+-------------------------------------
+    
+### Trip Destinations
+    
+```{r}
+
+geo_coded_end %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addHeatmap(~END_LONGITUDE,~END_LATITUDE,blur = 20,
+             group = "Heatmap") %>% 
+  addMarkers(~END_LONGITUDE,~END_LATITUDE,label=~htmlEscape(postcode),
+             clusterOptions = markerClusterOptions(),
+             group = "Point") %>% 
+  addLayersControl(
+    overlayGroups = c("Heatmap","Point"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+
 ```
     
 ### Estimated Cost by Speed
