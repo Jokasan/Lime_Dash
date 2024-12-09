@@ -197,6 +197,7 @@ x <- c("Total Distance: ")
 y <- c("{point.label}")
 
 tt <- tooltip_table(x, y)
+cols <- viridis(12,option = "rocket")
 
 hchart(
   summarised_dist_month,
@@ -223,8 +224,36 @@ hchart(
     labels = list(style = list(fontSize = '14px'))
   ) %>% 
   hc_chart(
-    style = list(fontFamily = "Verdana"))
+    style = list(fontFamily = "Verdana")) %>% 
+  hc_colors(cols)
 
+hchart(
+  summarised_dist_month,
+  "column",
+  hcaes(x = month, y = total_distance, name = month, drilldown = month),
+  name = "Total Distance by Month",
+  colorByPoint = TRUE
+) |>
+  hc_drilldown(
+    allowPointDrilldown = TRUE,
+    series = list_parse(day_drill_down)
+  ) |>
+  hc_tooltip(
+    pointFormat = tt, # "{point.name} {point.pop}"
+    useHTML = TRUE,
+    valueDecimals = 0,
+    style = list(fontSize = '12px')
+  ) |>
+  hc_yAxis(
+    title = list(text = "Total Distance")
+  ) |>
+  hc_xAxis(
+    title = "Total Distance by Month & Day of Week",
+    labels = list(style = list(fontSize = '14px'))
+  ) %>% 
+  hc_chart(
+    style = list(fontFamily = "Verdana")) %>% 
+  hc_colors(cols)
 # Plot 3:
 
 

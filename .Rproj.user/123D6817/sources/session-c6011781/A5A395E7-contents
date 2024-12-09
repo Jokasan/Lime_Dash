@@ -1,0 +1,336 @@
+---
+title: "When Life Gives You Limes 🍋‍🟩..."
+output: 
+  flexdashboard::flex_dashboard:
+    theme: 
+      version: 4
+      bootswatch: lux
+    orientation: rows
+    source_code: https://github.com/Jokasan/Dashbord_Example
+---
+
+Inputs {.sidebar}
+-------------------------------------
+
+### Lime Bike Analysis 
+#### By: Nils Indreiten
+
+[Lime](https://www.li.me/en-gb/) is an electric bike and scooter sharing company that operates in various cities around the world. 
+This dashboard analyses the data from a single Lime bike account in London. The 
+data was obtained by asking Lime for an extract through the [request submission process](https://help.li.me/hc/en-us/requests/new).
+
+###### Data Viz. Approach
+
+The data in this dashboard is from July 2020 to August 2024 (time of extraction).
+
+*Total Distance by Month and Day of Week*: Select the month/bar to view a breakdown by day of week.
+
+*Total Cost by Year*: Toggle the year slider to view different years.
+
+*Trip Start & End Locations*: Click on the markers to view the start and end locations of the trips.
+
+*Estimated Cost by Speed*: The cost was modeled using the `loess` method with speed as the predictor.
+
+The [`echarts4r`](https://echarts4r.john-coene.com), [`highcharter`](https://jkunst.com/highcharter/) and [`leaflet`](https://rstudio.github.io/leaflet/) packages were used to create the visuals.
+
+```{r global, include=FALSE}
+pacman::p_load(tidyverse, lubridate, readr,highcharter,echarts4r,leaflet,ggmap,leaflet.extras,htmltools,broom,flexdashboard,readr,viridisLite)
+
+geo_coded_start <- read_csv("geo_coded_start.csv")
+
+geo_coded_end <- read_csv("geo_coded_end.csv")
+
+geo_coded_full <- geo_coded_end %>% 
+  rename(address_found_end=address_found,suburb_end=suburb,end_post_code=postcode) %>% 
+  cbind(geo_coded_start) %>% 
+  as_tibble()
+
+limebike_data <- read_csv("TRIPS.csv")
+
+# Dataframe 1: Summarised data for distance and time:
+
+limebike_data %>% 
+  filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
+  mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
+         COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=19)) %>%
+  mutate(start_date = lubridate::as_datetime(STARTED_AT),
+         end_date = lubridate::as_datetime(COMPLETED_AT),
+         day_of_week = wday(start_date, label = TRUE),
+         month = month(start_date, label = TRUE)) %>% 
+  mutate(time = as.integer(difftime(end_date,start_date,units = "mins"))) %>% 
+  select(start_date, end_date, DISTANCE_METERS,COST_AMOUNT_CENTS,time) %>% 
+ mutate(total_distance = DISTANCE_METERS/1000,
+            total_cost = COST_AMOUNT_CENTS/100,
+            total_time = time/60,
+            speed = ((DISTANCE_METERS/1000)/time)*60) -> summarised_dist_time
+
+# Dataframe 2: Data for modelling:
+limebike_data %>% 
+  filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
+  mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
+         COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=19)) %>%
+  mutate(start_date = lubridate::as_datetime(STARTED_AT),
+         end_date = lubridate::as_datetime(COMPLETED_AT),
+         day_of_week = wday(start_date, label = TRUE),
+         month = month(start_date, label = TRUE),
+         quarter = quarter(start_date)) %>% 
+  mutate(time = as.integer(difftime(end_date,start_date,units = "mins")),
+         COST=COST_AMOUNT_CENTS/100,
+         speed = ((DISTANCE_METERS/1000)/time)*60) %>%
+  filter(speed != Inf & COST>0) %>%
+  select(start_date,end_date,time,DISTANCE_METERS,COST,speed) -> to_model
+
+```
+
+
+
+Row {data-height=100}
+-------------------------------------
+### KPI
+
+```{r}
+valueBox(scales::comma(round(sum(summarised_dist_time$total_distance)),suffix =  " Km"), caption = "Total Distance Cycled", color = "success", icon = "glyphicon glyphicon-circle-arrow-up")
+
+```
+
+### KPI
+
+```{r}
+valueBox(scales::dollar(round(sum(summarised_dist_time$total_cost)),prefix = "£"), caption = "Total Cycling Cost", color = "orange", icon = "glyphicon glyphicon-credit-card")
+
+```
+
+
+### KPI
+
+```{r}
+valueBox(scales::number(round(sum(summarised_dist_time$total_time)),suffix = " hrs "), caption = "Total Cycling Time", color = "steelblue", icon = "glyphicon glyphicon-time")
+
+```
+
+
+### KPI
+
+```{r}
+valueBox(scales::number(round(mean(to_model$speed)),suffix = " Km/h"), caption = "Average Cycle Speed", color = "purple", icon = "glyphicon glyphicon-flash")
+
+```
+
+Row
+-------------------------------------
+    
+### Total Distance by Month and Day of Week
+    
+```{r}
+# Dataframe 4: Highchart layer 1 - Total distance by month:
+
+limebike_data %>% 
+  filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
+  mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
+         COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=10)) %>%
+  mutate(start_date = lubridate::as_datetime(STARTED_AT),
+         end_date = lubridate::as_datetime(COMPLETED_AT),
+         day_of_week = wday(start_date, label = TRUE),
+         month = month(start_date, label = TRUE)) %>% 
+  select(month, DISTANCE_METERS) %>% 
+  group_by(month) %>% 
+  summarise(total_distance = sum(DISTANCE_METERS)/1000) %>% 
+  ungroup() %>% 
+  mutate(label = scales::number(round(total_distance),suffix = " Km")) -> summarised_dist_month
+
+# Dataframe 5: Highchart layer 2 - Total distance by day of week:
+
+limebike_data %>% 
+  filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
+  mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
+         COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=10)) %>%
+  mutate(start_date = lubridate::as_datetime(STARTED_AT),
+         end_date = lubridate::as_datetime(COMPLETED_AT),
+         day_of_week = wday(start_date, label = TRUE),
+         month = month(start_date, label = TRUE)) %>% 
+  select(day_of_week, month, DISTANCE_METERS) %>% 
+  group_by(month,day_of_week) %>% 
+  summarise(total_distance = sum(DISTANCE_METERS)/1000) %>% 
+  ungroup()-> summarised_dist_time
+
+summarised_dist_time <- summarised_dist_time %>% 
+  mutate(label = scales::number(round(total_distance),suffix = " Km"))
+
+day_drill_down <-summarised_dist_time %>% 
+  group_nest(month) %>% 
+  mutate(
+    id = month,
+    type = "column",
+    data = map(data, mutate, name = day_of_week, y  = total_distance),
+    data = map(data, list_parse)
+  )
+cols <- viridis(12,option = "rocket")
+
+x <- c("Total Distance: ")
+y <- c("{point.label}")
+
+tt <- tooltip_table(x, y)
+
+hchart(
+  summarised_dist_month,
+  "column",
+  hcaes(x = month, y = total_distance, name = month, drilldown = month),
+  name = "Total Distance by Month",
+  colorByPoint = TRUE
+) |>
+  hc_drilldown(
+    allowPointDrilldown = TRUE,
+    series = list_parse(day_drill_down)
+  ) |>
+  hc_tooltip(
+    pointFormat = tt, 
+    useHTML = TRUE,
+    valueDecimals = 0,
+    style = list(fontSize = '12px')
+  ) |>
+  hc_yAxis(
+    title = list(text = "Total Distance (Km)")
+  ) |>
+  hc_xAxis(
+    title = "Total Distance by Month & Day of Week",
+    labels = list(style = list(fontSize = '14px'))
+  ) %>% 
+  hc_chart(
+    style = list(fontFamily = "Verdana")) %>% 
+  hc_colors(cols)
+```
+ 
+### Total Cost Over time
+
+```{r}
+# Dataframe 6: Total cost by year:
+
+limebike_data %>% 
+  filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
+  mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
+         COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=10)) %>%
+  mutate(start_date = lubridate::as_date(STARTED_AT),
+         end_date = lubridate::as_datetime(COMPLETED_AT),
+         day_of_week = wday(start_date, label = TRUE),
+         month = month(start_date, label = TRUE),
+         year = year(start_date),
+         COST_AMOUNT_CENTS = COST_AMOUNT_CENTS/100) %>% 
+  select(STARTED_AT, year,DISTANCE_METERS,COST_AMOUNT_CENTS) %>%
+  group_by(STARTED_AT,year) %>%
+  summarise(total_distance = sum(DISTANCE_METERS),
+            total_cost = sum(COST_AMOUNT_CENTS)) %>% 
+  ungroup() %>% 
+  mutate(date=lubridate::as_date(STARTED_AT) %>% floor_date(unit = "month")) %>% 
+  select(-STARTED_AT) %>% 
+  group_by(date,year) %>% 
+  summarise(total_distance = sum(total_distance),
+            Cost = sum(total_cost)) %>% 
+  ungroup()-> for_time_series
+
+for_time_series %>% 
+  mutate(month = month(date,label=TRUE)) %>%
+  group_by(year) %>% 
+  e_charts(date,timeline = TRUE) %>% 
+  e_area(Cost, smooth = TRUE) %>% 
+  e_theme("infographic") %>% 
+  e_axis_labels(y = "Cost") %>%
+  e_legend(show = FALSE) %>% 
+e_mark_line(
+    data = list(type = "average"),
+    label = list(
+      normal = list(
+        show = TRUE,
+        fontweight = "bold",
+        position = "insideEndTop",
+        distance = 20,  
+        formatter = htmlwidgets::JS(
+          "function(params) {
+                var Cost = (params.value).toFixed(1);
+                return params.name +'Average cost:' +'£' + Cost;
+              }"
+        ),
+        color = "orange"
+      )
+    ),
+    lineStyle = list(
+      color = "orange"
+    )
+  ) %>%
+ e_timeline_opts(
+   autoPlay = FALSE,
+   currentIndex = which(unique(year(for_time_series$date)) == 2022) - 1)
+``` 
+
+Row {.tabset}
+-------------------------------------
+    
+### Trip Start & End Locations
+    
+```{r}
+geo_coded_full %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addHeatmap(~END_LONGITUDE,~END_LATITUDE,blur = 20,
+             group = "End Location Heatmap") %>% 
+  addMarkers(~END_LONGITUDE,~END_LATITUDE,label=~htmlEscape(end_post_code),
+             clusterOptions = markerClusterOptions(),
+             group = "End Location Pin") %>% 
+  addHeatmap(~START_LONGITUDE,~START_LATITUDE,blur = 20,
+             group = "Start Location Heatmap") %>% 
+  addMarkers(~START_LONGITUDE,~START_LATITUDE,label=~htmlEscape(postcode),
+             clusterOptions = markerClusterOptions(),
+             group = "Start Location Pin") %>% 
+  addLayersControl(
+    overlayGroups = c("End Location Heatmap","End Location Pin","Start Location Heatmap","Start Location Pin"),
+    options = layersControlOptions(collapsed = FALSE)) %>%
+ hideGroup("Start Location Heatmap") %>%
+ hideGroup("Start Location Pin")
+```
+    
+### Estimated Cost by Speed
+
+```{r}
+modlss <- loess(COST ~ speed, data = to_model)
+
+fit <- arrange(augment(modlss), speed) |> 
+  mutate(.se = predict(modlss, se = TRUE)$se.fit)
+
+
+qtint <- round(qt(0.95, predict(modlss, se = TRUE)$df),2)
+
+fit %>% 
+  mutate_if(is.numeric, round, 2) -> fit
+
+hchart(
+  fit,
+  type = "spline",
+  hcaes(x = speed, y = .fitted),
+  name = "Estimated Cost",
+  id = "fit",
+  lineWidth = 1,
+  color = "#1F77B4",
+  showInLegend = TRUE 
+) |> 
+  hc_add_series(
+    fit,
+    type = "arearange",
+    name = "Confidence Interval",
+    hcaes(x = speed, low = .fitted - qtint*.se, high = .fitted + qtint*.se),
+    linkedTo = "fit",
+    color = hex_to_rgba("indianred", 0.2),  
+    zIndex = -1
+  ) |>
+  hc_xAxis(title = list(text = "Speed (Km/h)")) |>
+  hc_yAxis(title = list(text = "Cost (£)")) |>
+  hc_title(text = "Estimated Cost by Speed")%>% 
+  hc_tooltip(
+    crosshairs = TRUE,
+    borderWidth = 5,
+    sort = TRUE,
+    table = TRUE,
+    style = list(
+      fontSize = "12px"
+    )
+    ) 
+```
+
