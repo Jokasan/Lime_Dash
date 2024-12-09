@@ -9,7 +9,7 @@ output:
     source_code: https://github.com/Jokasan/Lime_Dash
 ---
 
-Inputs {.sidebar}
+ {.sidebar}
 -------------------------------------
 
 ### Lime Bike Analysis 
