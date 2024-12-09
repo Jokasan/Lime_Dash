@@ -233,7 +233,7 @@ for_time_series %>%
   e_charts(date,timeline = TRUE) %>% 
   e_area(Cost, smooth = TRUE) %>% 
   e_theme("infographic") %>% 
-  e_axis_labels(y = "Cost") %>%
+  e_axis_labels(y = "Cost (£)") %>%
   e_legend(show = FALSE) %>% 
 e_mark_line(
     data = list(type = "average"),
