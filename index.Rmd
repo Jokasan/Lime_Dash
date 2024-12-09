@@ -6,7 +6,7 @@ output:
       version: 4
       bootswatch: lux
     orientation: rows
-    source_code: https://github.com/Jokasan/Dashbord_Example
+    source_code: https://github.com/Jokasan/Lime_Dash
 ---
 
 Inputs {.sidebar}
