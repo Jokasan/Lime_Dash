@@ -2,9 +2,9 @@
 # Wrangling:
 pacman::p_load(tidyverse, lubridate, readr,highcharter,echarts4r,echarts4r.maps,leaflet,ggmap,leaflet.extras,htmltools,broom,flexdashboard)
 
-fawaz_lime <- read_csv("TRIPS.csv")
+limebike_data <- read_csv("TRIPS.csv")
 
-fawaz_lime %>% 
+limebike_data %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
          COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=19)) %>%
@@ -19,7 +19,7 @@ fawaz_lime %>%
             total_time = time/60,
             speed = ((DISTANCE_METERS/1000)/time)*60) -> summarised_dist_time
 
-fawaz_lime %>% 
+limebike_data %>% 
   # select(STARTED_AT,COMPLETED_AT) %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
@@ -44,7 +44,7 @@ valueBox(scales::number(round(mean(to_model$speed)),suffix = " Km/hr"), caption 
 
 
 # Plot 1:
-fawaz_lime %>% 
+limebike_data %>% 
   # select(STARTED_AT,COMPLETED_AT) %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
@@ -58,7 +58,7 @@ fawaz_lime %>%
   summarise(total_distance = sum(DISTANCE_METERS)) %>% 
   ungroup()-> summarised_dist_time
 
-fawaz_lime %>% 
+limebike_data %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
          COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=19)) %>%
@@ -167,7 +167,7 @@ hc_size(height = 700) %>%
 
 # Plot 2:
 
-fawaz_lime %>% 
+limebike_data %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
          COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=10)) %>%
@@ -257,7 +257,7 @@ hchart(
 # Plot 3:
 
 
-fawaz_lime %>% 
+limebike_data %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
          COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=10)) %>%
@@ -323,7 +323,7 @@ universe |>
 
 # Plot 4:
 
-fawaz_lime %>% 
+limebike_data %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
          COMPLETED_AT = substr(COMPLETED_AT,start=1,stop=10)) %>%
@@ -407,7 +407,7 @@ geo_coded_end %>%
 
 # Plot 6:
 
-fawaz_lime %>% 
+limebike_data %>% 
   # select(STARTED_AT,COMPLETED_AT) %>% 
   filter(STATUS == "completed" & !is.na(STARTED_AT)) %>% 
   mutate(STARTED_AT = substr(STARTED_AT,start=1,stop=19),
